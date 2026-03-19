@@ -17,6 +17,7 @@ import {
   Chip,
   MD3Colors,
   useTheme,
+  //sdf
 } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
