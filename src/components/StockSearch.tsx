@@ -41,6 +41,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 const TIME_RANGES: { label: string; value: TimeRange }[] = [
+  { label: '1D', value: '1d' },
   { label: '5D', value: '5d' },
   { label: '1M', value: '1mo' },
   { label: '3M', value: '3mo' },
@@ -573,7 +574,7 @@ export default function StockSearch() {
             Search for a Stock
           </Typography>
           <Typography sx={{ fontSize: '0.8rem', color: '#64748b' }}>
-            ค้นหาหุ้นด้วยชื่อหรือสัญลักษณ์ เช่น AAPL, TSLA, PTT.BK
+            ค้นหาหุ้นเช่น AAPL, TSLA, NVDA
           </Typography>
         </Box>
       )}

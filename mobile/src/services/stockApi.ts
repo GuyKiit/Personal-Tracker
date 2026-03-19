@@ -1,6 +1,3 @@
-// Using Vite proxy for local dev: see \`vite.config.ts\`
-// In production, you would need a proper backend proxy.
-
 export interface StockQuote {
   symbol: string;
   name: string;
@@ -25,7 +22,7 @@ export interface StockSearchResult {
   exchange: string;
 }
 
-export type TimeRange = '1d' | '5d' | '1mo' | '3mo' | '6mo' | '1y' | '5y';
+export type TimeRange = '1d'|'5d' | '1mo' | '3mo' | '6mo' | '1y' | '5y';
 
 const RANGE_INTERVALS: Record<TimeRange, string> = {
   '1d': '1m',
@@ -37,29 +34,35 @@ const RANGE_INTERVALS: Record<TimeRange, string> = {
   '5y': '1mo',
 };
 
+const BASE_URL = 'https://query1.finance.yahoo.com';
+
 /**
  * Search for stock symbols via Yahoo Finance
  */
 export async function searchSymbols(query: string): Promise<StockSearchResult[]> {
   if (!query.trim()) return [];
 
-  const proxyUrl = `/api/yahoo/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=8&newsCount=0&listsCount=0`;
+  const url = `${BASE_URL}/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=8&newsCount=0&listsCount=0`;
 
-  const res = await fetch(proxyUrl);
-  if (!res.ok) throw new Error('Network response was not ok');
-  
-  const parsed = await res.json();
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Network response was not ok');
+    
+    const parsed = await res.json();
+    if (!parsed.quotes) return [];
 
-  if (!parsed.quotes) return [];
-
-  return parsed.quotes
-    .filter((q: any) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF')
-    .map((q: any) => ({
-      symbol: q.symbol,
-      name: q.shortname || q.longname || q.symbol,
-      type: q.quoteType,
-      exchange: q.exchDisp || q.exchange,
-    }));
+    return parsed.quotes
+      .filter((q: any) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF')
+      .map((q: any) => ({
+        symbol: q.symbol,
+        name: q.shortname || q.longname || q.symbol,
+        type: q.quoteType,
+        exchange: q.exchDisp || q.exchange,
+      }));
+  } catch (error) {
+    console.error('Search error:', error);
+    return [];
+  }
 }
 
 /**
@@ -70,9 +73,9 @@ export async function fetchStockChart(
   range: TimeRange = '3mo'
 ): Promise<{ quote: StockQuote; chart: ChartPoint[] }> {
   const interval = RANGE_INTERVALS[range];
-  const proxyUrl = `/api/yahoo/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
+  const url = `${BASE_URL}/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
 
-  const res = await fetch(proxyUrl);
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Network response was not ok');
   
   const parsed = await res.json();
@@ -105,7 +108,7 @@ export async function fetchStockChart(
     if (closes[i] != null) {
       const d = new Date(timestamps[i] * 1000);
       const dateStr =
-        range === '1d' || range === '5d'
+        range === '5d'
           ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
           : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: range === '5y' || range === '1y' ? 'numeric' : undefined });
 
